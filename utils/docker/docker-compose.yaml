@@ -1,0 +1,49 @@
+version: '3.8'
+
+volumes:
+  influxdb-data: {}
+  grafana-data: {}
+
+services:
+#  prometheus:
+#    image: prom/prometheus
+#    container_name: prometheus
+#    ports:
+#      - "9090:9090"
+#    volumes:
+#      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+#    networks:
+#      - monitoring
+
+  influxdb:
+    image: influxdb:1.7-alpine
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+      - ./influxdb-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    environment:
+      INFLUXDB_REPORTING_DISABLED: true
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    user: 'root'
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    volumes:
+#      - ./datasource-prometheus.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./influxdb-datasource.yaml:/etc/grafana/provisioning/datasources/influxdb.yaml
+      - ./universal-dashboard.yaml:/etc/grafana/provisioning/dashboards/universal.yaml
+      - ./grafana-dashboards:/var/lib/grafana/dashboards
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge

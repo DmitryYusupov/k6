@@ -1,0 +1,104 @@
+import http from 'k6/http';
+import {Options} from "k6/options";
+
+import {getRandomNumberInRange} from "../../utils/MathUtils";
+import {
+    B2B_INTEGRATION_BEARER_TOKEN, B2B_INTEGRATION_SUB_PATH_PATCH_VIDEO, B2B_INTEGRATION_SUB_PATH_SEARCH_PLAY_LIST,
+    B2B_INTEGRATION_SUB_PATH_SEARCH_VIDEO,
+    B2B_INTEGRATION_URL,
+    B2b_TEST_DURATION, B2bPatchVideoRequest, b2bPatchVideoRequests, B2bSearchPlayListRequest, b2bSearchPlayListRequests,
+    B2bSearchVideoRequest,
+    b2bSearchVideoRequests
+} from "./B2bIntegrationConfiguration";
+
+export let options: Options = {
+    scenarios: {
+        b2b_searchVideo: {
+            executor: 'constant-arrival-rate',
+            preAllocatedVUs: 10,
+
+            rate: 1,
+            timeUnit: '1s',
+
+            duration: B2b_TEST_DURATION,
+            gracefulStop: '2s'
+        }
+    }
+};
+
+function getVideoSearchRequestConfiguration(): B2bSearchVideoRequest {
+    const requests = b2bSearchVideoRequests
+    const configurationIndex = getRandomNumberInRange(0, requests.length - 1)
+    return requests[configurationIndex]
+}
+
+function getVideoPatchRequestConfiguration(): B2bPatchVideoRequest {
+    const requests = b2bPatchVideoRequests
+    const configurationIndex = getRandomNumberInRange(0, requests.length - 1)
+    return requests[configurationIndex]
+}
+
+function getPlaylistSearchRequestConfiguration(): B2bSearchPlayListRequest {
+    const requests = b2bSearchPlayListRequests
+    const configurationIndex = getRandomNumberInRange(0, requests.length - 1)
+    return requests[configurationIndex]
+}
+
+function sendVideoSearchRequest() {
+    const request = getVideoSearchRequestConfiguration()
+    let url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_SEARCH_VIDEO + "?limit=" + request.limit +"&offset=" + request.offset + "&calculateTotal=" + request.calculateTotal
+    const body = JSON.stringify(request.requestBody)
+
+    const result = http.post(
+        url,
+        body,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: "Bearer " + B2B_INTEGRATION_BEARER_TOKEN
+            }
+        }
+    );
+    console.log("VIDEO SEARCH STATUS   " + result.status)
+}
+
+function sendVideoPatchRequest() {
+    const request = getVideoPatchRequestConfiguration()
+    const url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_PATCH_VIDEO
+    const body = JSON.stringify(request)
+
+    const result = http.patch(
+        url,
+        body,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: "Bearer " + B2B_INTEGRATION_BEARER_TOKEN
+            }
+        }
+    );
+    console.log("VIDEO PATCH STATUS   " + result.status)
+}
+
+function sendPlayListSearchRequest() {
+    const request = getPlaylistSearchRequestConfiguration()
+    let url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_SEARCH_PLAY_LIST + "?limit=" + request.limit +"&offset=" + request.offset + "&calculateTotal=" + request.calculateTotal
+    const body = JSON.stringify(request.requestBody)
+
+    const result = http.post(
+        url,
+        body,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: "Bearer " + B2B_INTEGRATION_BEARER_TOKEN
+            }
+        }
+    );
+    console.log("PLAY LIST STATUS   " + result.status)
+}
+export default function () {
+   // sendVideoSearchRequest() // OK
+     //sendPlayListSearchRequest() // 500
+    sendVideoPatchRequest()
+}

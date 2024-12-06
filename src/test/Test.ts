@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import {sleep} from 'k6';
-import {B2B_INTEGRATION, B2BEndpoint, B2BEndpointDetails} from "../Configuration";
 import {Options} from "k6/options";
+import {B2B_INTEGRATION_BEARER_TOKEN} from "../tests/b2bintegration/B2bIntegrationConfiguration";
 
 export let options: Options = {
     scenarios: {
@@ -24,11 +24,12 @@ export let options: Options = {
 };
 
 function sendRequest() {
-    http.get(
-        B2B_INTEGRATION.baseUrl + B2BEndpointDetails.GET_ALL_USERS.path,
+    const result = http.get(
+        "http://localhost:8098/api/v1/content/video/search?limit=50&offset=0&calculateTotal=false",
+
         {
             headers: {
-                authorization: B2B_INTEGRATION.bearerToken!!
+                authorization: "Bearer " + B2B_INTEGRATION_BEARER_TOKEN
             }
         }
     );

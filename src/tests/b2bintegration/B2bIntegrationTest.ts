@@ -13,11 +13,36 @@ import {
 
 export let options: Options = {
     scenarios: {
-        b2b_searchVideo: {
+        b2b_searchContentVideo: {
             executor: 'constant-arrival-rate',
+            exec: 'searchContentVideo',
             preAllocatedVUs: 10,
 
-            rate: 1,
+            rate: 10,
+            timeUnit: '1s',
+
+            duration: B2b_TEST_DURATION,
+            gracefulStop: '2s'
+        },
+
+        b2b_searchPlayList: {
+            executor: 'constant-arrival-rate',
+            exec: 'searchPlayList',
+            preAllocatedVUs: 10,
+
+            rate: 10,
+            timeUnit: '1s',
+
+            duration: B2b_TEST_DURATION,
+            gracefulStop: '2s'
+        },
+
+        b2b_patchContentVideo: {
+            executor: 'constant-arrival-rate',
+            exec: 'patchContentVideo',
+            preAllocatedVUs: 10,
+
+            rate: 10,
             timeUnit: '1s',
 
             duration: B2b_TEST_DURATION,
@@ -46,7 +71,7 @@ function getPlaylistSearchRequestConfiguration(): B2bSearchPlayListRequest {
 
 function sendVideoSearchRequest() {
     const request = getVideoSearchRequestConfiguration()
-    let url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_SEARCH_VIDEO + "?limit=" + request.limit +"&offset=" + request.offset + "&calculateTotal=" + request.calculateTotal
+    let url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_SEARCH_VIDEO + "?limit=" + request.limit + "&offset=" + request.offset + "&calculateTotal=" + request.calculateTotal
     const body = JSON.stringify(request.requestBody)
 
     const result = http.post(
@@ -86,7 +111,7 @@ function sendVideoPatchRequest() {
  */
 function sendPlayListSearchRequest() {
     const request = getPlaylistSearchRequestConfiguration()
-    let url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_SEARCH_PLAY_LIST + "?limit=" + request.limit +"&offset=" + request.offset + "&calculateTotal=" + request.calculateTotal
+    let url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_SEARCH_PLAY_LIST + "?limit=" + request.limit + "&offset=" + request.offset + "&calculateTotal=" + request.calculateTotal
     const body = JSON.stringify(request.requestBody)
 
     const result = http.post(
@@ -101,8 +126,23 @@ function sendPlayListSearchRequest() {
     );
     console.log("PLAY LIST STATUS   " + result.status + " BODY WAS " + body)
 }
-export default function () {
-   // sendVideoSearchRequest() // OK
-  //   sendPlayListSearchRequest() // Sometimes some of them fail
-    //sendVideoPatchRequest() // OK
+
+
+export function searchContentVideo() {
+    sendVideoSearchRequest()
 }
+
+export function patchContentVideo() {
+    sendVideoPatchRequest()
+}
+
+export function searchPlayList() {
+    sendPlayListSearchRequest()
+}
+
+/*
+export default function () {
+    // sendVideoSearchRequest() // OK
+    //   sendPlayListSearchRequest() // Sometimes some of them fail
+    //sendVideoPatchRequest() // OK
+}*/

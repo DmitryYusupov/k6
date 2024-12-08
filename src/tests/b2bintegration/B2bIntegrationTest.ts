@@ -1,5 +1,6 @@
-import http from 'k6/http';
+import http, {RefinedResponse, ResponseType} from 'k6/http';
 import {Options} from "k6/options";
+import {Trend, Rate, Counter} from 'k6/metrics';
 
 import {getRandomNumberInRange} from "../../utils/MathUtils";
 import {
@@ -11,6 +12,10 @@ import {
     b2bSearchVideoRequests
 } from "./B2bIntegrationConfiguration";
 
+let durationTrend = new Trend("DurationTrend");
+let successRate = new Rate("SuccessRate");
+let requestsCounter = new Counter("RequestsCounter");
+let errorCounter = new Counter("ErrorCounter")
 export let options: Options = {
     scenarios: {
         b2b_searchContentVideo: {
@@ -84,14 +89,14 @@ function sendVideoSearchRequest() {
             }
         }
     );
-    //console.log("VIDEO SEARCH STATUS   " + result.status)
+    gatherResponseStatistics(result, 'b2b_searchContentVideo')
 }
 
 function sendVideoPatchRequest() {
     const request = getVideoPatchRequestConfiguration()
     const url = B2B_INTEGRATION_URL + B2B_INTEGRATION_SUB_PATH_PATCH_VIDEO
     const body = JSON.stringify([request])
-    //console.log("PATCH REQUEST BODY " + body)
+
 
     const result = http.patch(
         url,
@@ -103,7 +108,7 @@ function sendVideoPatchRequest() {
             }
         }
     );
-   // console.log("VIDEO PATCH STATUS   " + result.status)
+    gatherResponseStatistics(result, 'b2b_patchContentVideo')
 }
 
 /**
@@ -124,6 +129,8 @@ function sendPlayListSearchRequest() {
             }
         }
     );
+
+    gatherResponseStatistics(result, 'b2b_searchPlayList')
     //console.log("PLAY LIST STATUS   " + result.status + " BODY WAS " + body)
 }
 
@@ -140,9 +147,13 @@ export function searchPlayList() {
     sendPlayListSearchRequest()
 }
 
-/*
-export default function () {
-    // sendVideoSearchRequest() // OK
-    //   sendPlayListSearchRequest() // Sometimes some of them fail
-    //sendVideoPatchRequest() // OK
-}*/
+function gatherResponseStatistics(response: RefinedResponse<ResponseType | undefined>, subscenario: string) {
+    const successResponse = response.status === 200 || response.status === 201
+    if (successResponse) {
+        successRate.add(1, {subscenario: subscenario});
+    } else {
+        errorCounter.add(1, {subscenario: subscenario});
+    }
+    durationTrend.add(response.timings.duration, {subscenario: subscenario});
+    requestsCounter.add(1, {subscenario: subscenario});
+}

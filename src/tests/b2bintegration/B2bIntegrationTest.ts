@@ -11,12 +11,13 @@ import {
     B2bSearchVideoRequest,
     b2bSearchVideoRequests
 } from "./B2bIntegrationConfiguration";
+import {check} from "k6";
 
-let durationTrend = new Trend("DurationTrend");
-let successRate = new Rate("SuccessRate");
-let requestsCounter = new Counter("RequestsCounter");
-let errorRate = new Rate("ErrorRate")
-let errorCounter = new Rate("ErrorCounter")
+const durationTrend = new Trend("DurationTrend");
+const successRate = new Rate("SuccessRate");
+const requestsCounter = new Counter("RequestsCounter");
+const errorRate = new Rate("ErrorRate")
+const errorCounter = new Counter("ErrorCounter")
 export let options: Options = {
     scenarios: {
         b2b_searchContentVideo: {
@@ -36,7 +37,7 @@ export let options: Options = {
             exec: 'searchPlayList',
             preAllocatedVUs: 10,
 
-            rate: 10,
+            rate: 30,
             timeUnit: '1s',
 
             duration: B2b_TEST_DURATION,
@@ -132,7 +133,6 @@ function sendPlayListSearchRequest() {
     );
 
     gatherResponseStatistics(result, 'b2b_searchPlayList')
-    //console.log("PLAY LIST STATUS   " + result.status + " BODY WAS " + body)
 }
 
 
@@ -149,13 +149,17 @@ export function searchPlayList() {
 }
 
 function gatherResponseStatistics(response: RefinedResponse<ResponseType | undefined>, subscenario: string) {
-    const successResponse = response.status === 200 || response.status === 201
-    if (successResponse) {
-        successRate.add(1, {subscenario: subscenario});
-    } else {
+    let isError = check(response, {
+        'is error': (r) => r.status != 200,
+    });
+    errorRate.add(isError,{subscenario: subscenario});
+    successRate.add(!isError, {subscenario: subscenario});
+    successRate.add(!isError);
+
+    if (!isError) {
         errorCounter.add(1, {subscenario: subscenario});
-        errorRate.add(1, {subscenario: subscenario});
     }
-    durationTrend.add(response.timings.duration, {subscenario: subscenario});
+
+    durationTrend.add(response.timings.duration, {subscenario: subscenario})
     requestsCounter.add(1, {subscenario: subscenario});
 }

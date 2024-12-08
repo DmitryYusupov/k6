@@ -84,7 +84,7 @@ function sendVideoSearchRequest() {
             }
         }
     );
-    console.log("VIDEO SEARCH STATUS   " + result.status)
+    //console.log("VIDEO SEARCH STATUS   " + result.status)
 }
 
 function sendVideoPatchRequest() {
@@ -103,7 +103,7 @@ function sendVideoPatchRequest() {
             }
         }
     );
-    console.log("VIDEO PATCH STATUS   " + result.status)
+   // console.log("VIDEO PATCH STATUS   " + result.status)
 }
 
 /**
@@ -124,7 +124,7 @@ function sendPlayListSearchRequest() {
             }
         }
     );
-    console.log("PLAY LIST STATUS   " + result.status + " BODY WAS " + body)
+    //console.log("PLAY LIST STATUS   " + result.status + " BODY WAS " + body)
 }
 
 

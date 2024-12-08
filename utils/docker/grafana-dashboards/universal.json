@@ -959,7 +959,7 @@
             }
           ],
           "hide": false,
-          "measurement": "Duration Trend",
+          "measurement": "DurationTrend",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -1144,7 +1144,7 @@
             }
           ],
           "hide": false,
-          "measurement": "Requests Counter",
+          "measurement": "RequestsCounter",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -1289,7 +1289,7 @@
             }
           ],
           "hide": false,
-          "measurement": "Success Rate",
+          "measurement": "SuccessRate",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",

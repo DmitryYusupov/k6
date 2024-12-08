@@ -15,7 +15,8 @@ import {
 let durationTrend = new Trend("DurationTrend");
 let successRate = new Rate("SuccessRate");
 let requestsCounter = new Counter("RequestsCounter");
-let errorCounter = new Counter("ErrorCounter")
+let errorRate = new Rate("ErrorRate")
+let errorCounter = new Rate("ErrorCounter")
 export let options: Options = {
     scenarios: {
         b2b_searchContentVideo: {
@@ -153,6 +154,7 @@ function gatherResponseStatistics(response: RefinedResponse<ResponseType | undef
         successRate.add(1, {subscenario: subscenario});
     } else {
         errorCounter.add(1, {subscenario: subscenario});
+        errorRate.add(1, {subscenario: subscenario});
     }
     durationTrend.add(response.timings.duration, {subscenario: subscenario});
     requestsCounter.add(1, {subscenario: subscenario});
